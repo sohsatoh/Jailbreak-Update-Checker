@@ -1,0 +1,9 @@
+Package: jp.soh.jailbreakupdatechecker
+Name: JailbreakUpdateChecker
+Version: 0.0.1
+Architecture: iphoneos-arm
+Description: Check for jailbreak updates
+Maintainer: Soh Satoh
+Author: Soh Satoh
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000), org.coolstar.jbupdater
