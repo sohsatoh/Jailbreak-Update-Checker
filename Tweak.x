@@ -99,8 +99,8 @@
         if (count != 0) {
             NSString *executablePath = args[0];
             NSString *processName = [executablePath lastPathComponent];
-            if (![processName isEqualToString:@"SpringBoard"]) %init(Sub);
-            else %init(Main);
+            if ([processName isEqualToString:@"SpringBoard"]) %init(Main);  // SpringBoard
+            else %init(Sub);                                                // jbupdate
         }
     }
 }

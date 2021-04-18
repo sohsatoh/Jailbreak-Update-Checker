@@ -76,7 +76,7 @@ static JBUManager *sharedInstance = nil;
     NSArray *jbFiles = @[@"/taurine/amfidebilitatee", @"/taurine/jailbreakd", @"/taurine/pspawn_payload.dylib", @"/usr/lib/pspawn_payload-stg2.dylib"];
     [jbFiles enumerateObjectsUsingBlock:^(NSString *filePath, NSUInteger idx, BOOL *stop) {
         NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-        NSString *sha256hash = [self calculateSha256HashWithFilePath:fileURL];
+        NSString *sha256hash = [self sha256HashWithFilePath:fileURL];
         if (sha256hash) {
             NSString *fileName = [fileURL lastPathComponent];
             [hashDict setObject:sha256hash forKey:fileName];
@@ -86,7 +86,7 @@ static JBUManager *sharedInstance = nil;
     return hashDict;
 }
 
-- (NSString *)calculateSha256HashWithFilePath:(NSURL *)fileLocation {
+- (NSString *)sha256HashWithFilePath:(NSURL *)fileLocation {
     NSLog(@"fileLocation = %@", fileLocation);
 
     NSError *error;

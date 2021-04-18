@@ -5,11 +5,11 @@
     [super viewDidLoad];
 
     if (self) {
-        [self _setupView];
+        [self setupView];
     }
 }
 
-- (void)_setupView {
+- (void)setupView {
     UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleProminent];
     UIVisualEffectView *visualEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
     visualEffectView.frame = self.view.bounds;
