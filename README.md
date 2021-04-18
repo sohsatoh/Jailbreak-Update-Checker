@@ -8,7 +8,7 @@ This tweak checks for updates to your jailbreak at respring and once every 24 ho
 
 If an update is available, you will be alerted and you can update by tapping "Update".
 
-Also, if for some reason you do not have a network connection and cannot check, you will be added to a queue and updates will be checked as soon as a network connection becomes available.
+Also, if for some reason you do not have a network connection and cannot check, the check will be added to a queue and updates will be checked as soon as a network connection becomes available.
 
 ## Support
 
