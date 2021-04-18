@@ -9,7 +9,7 @@ ARCHS = arm64 arm64e
 
 JailbreakUpdateChecker_FILES = JBUCommandOutputViewController.m JBUManager.m Tweak.x
 JailbreakUpdateChecker_CFLAGS = -fobjc-arc -include Prefix.pch
-
+JailbreakUpdateChecker_PRIVATE_FRAMEWORKS = AppSupport
 include $(THEOS_MAKE_PATH)/tweak.mk
 SUBPROJECTS += runupdatejb
 include $(THEOS_MAKE_PATH)/aggregate.mk

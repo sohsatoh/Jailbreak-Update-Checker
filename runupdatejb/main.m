@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-// #define BUFSIZE 1024
+#define BUFSIZE 1024
 
 int main(int argc, char *argv[], char *envp[]) {
     @autoreleasepool {
@@ -15,13 +15,17 @@ int main(int argc, char *argv[], char *envp[]) {
             return 1;
         }
 
-        //NSLog(@"JailbreakUpdateChecker - run command");
-
         pid_t pid;
-        posix_spawn(&pid, "/usr/sbin/jbupdate", NULL, NULL, NULL, NULL);  // (char *const *)args
+        char *envp[] = {
+            "DYLD_INSERT_LIBRARIES=/Library/MobileSubstrate/DynamicLibraries/JailbreakUpdateChecker.dylib",
+            NULL,
+        };
+        posix_spawn(&pid, "/usr/sbin/jbupdate", NULL, NULL, NULL, envp);
 
         // No output can be retrieved by code below
         // I'm not enthusiastic enough about this tweak to struggle with how to fix it.
+
+        // setvbuf(stdout, NULL, _IONBF, 0);
 
         // char *cmd = "/usr/sbin/jbupdate 2>&1";
 
@@ -29,16 +33,16 @@ int main(int argc, char *argv[], char *envp[]) {
         // FILE *fp;
 
         // if ((fp = popen(cmd, "r")) == NULL) {
-        //     printf("Error opening pipe!\n");
+        //     NSLog(@"JailbreakUpdateChecker - Error opening pipe!\n");
         //     return -1;
         // }
 
         // while (fgets(buf, BUFSIZE, fp) != NULL) {
-        //     printf("%s", buf);
+        //     NSLog(@"JailbreakUpdateChecker - %s", buf);
         // }
 
         // if (pclose(fp)) {
-        //     printf("Command not found or exited with error status\n");
+        //     NSLog(@"JailbreakUpdateChecker - Command not found or exited with error status\n");
         //     return -1;
         // }
 

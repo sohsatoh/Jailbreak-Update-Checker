@@ -1,5 +1,7 @@
 #import "JBUManager.h"
+#import <AppSupport/CPDistributedMessagingCenter.h>
 #import <CommonCrypto/CommonHMAC.h>
+
 
 #define kTaurineUrl @"https://sohsatoh.github.io/jbupdatechecker/taurine.json"
 
@@ -24,10 +26,27 @@ static JBUManager *sharedInstance = nil;
 - (instancetype)init {
     self = [super init];
     if (self) {
+        CPDistributedMessagingCenter *messagingCenter = [CPDistributedMessagingCenter centerNamed:@"jp.soh.jailbreakupdatechecker.center"];
+        [messagingCenter runServerOnCurrentThread];
+
+        // Register Messages
+        [messagingCenter registerForMessageName:@"message" target:self selector:@selector(handleMessageNamed:withUserInfo:)];
+
         // Get SHA256
         self.hashDict = [self getFileHashDict];
     }
     return self;
+}
+
+- (void)handleMessageNamed:(NSString *)name withUserInfo:(NSDictionary *)userinfo {
+    // Process userinfo (simple dictionary) and return a dictionary (or nil)
+    if (userinfo) {
+        NSLog(@"Got message");
+        NSString *message = [userinfo objectForKey:@"message"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.commandVC.outputView.text = [self.commandVC.outputView.text stringByAppendingString:message];
+        });
+    }
 }
 
 - (void)checkUpdate {
@@ -54,7 +73,7 @@ static JBUManager *sharedInstance = nil;
 - (NSMutableDictionary *)getFileHashDict {
     NSMutableDictionary *hashDict = [NSMutableDictionary dictionary];
 
-    NSArray *jbFiles = @[@"/taurine/amfidebilitate", @"/taurine/jailbreakd", @"/taurine/pspawn_payload.dylib", @"/usr/lib/pspawn_payload-stg2.dylib"];
+    NSArray *jbFiles = @[@"/taurine/amfidebilitatee", @"/taurine/jailbreakd", @"/taurine/pspawn_payload.dylib", @"/usr/lib/pspawn_payload-stg2.dylib"];
     [jbFiles enumerateObjectsUsingBlock:^(NSString *filePath, NSUInteger idx, BOOL *stop) {
         NSURL *fileURL = [NSURL fileURLWithPath:filePath];
         NSString *sha256hash = [self calculateSha256HashWithFilePath:fileURL];

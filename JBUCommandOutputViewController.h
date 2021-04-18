@@ -2,5 +2,5 @@
 #import <UIKit/UIKit.h>
 
 @interface JBUCommandOutputViewController : UIViewController
-// @property (nonatomic) UITextView *outputView;
+@property (nonatomic) UITextView *outputView;
 @end
