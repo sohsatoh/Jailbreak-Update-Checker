@@ -38,10 +38,6 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showUpdateAlertForJailbreak:) name:@"JBUShowUpdateAlertNotification" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showUpdateAlertForJailbreak:) name:@"JBUShowIPAAlertNotification" object:nil];
 
-    [NSTimer scheduledTimerWithTimeInterval:60*60*24 repeats:YES block:^(NSTimer *timer) {
-        [[JBUManager sharedInstance] checkUpdate];
-    }];
-
     [[JBUManager sharedInstance] checkUpdate];
 }
 
@@ -97,7 +93,7 @@
                         dispatch_async(dispatch_get_main_queue(), ^{
                                            NSArray *activityItems = @[newFilePath];
                                            UIActivityViewController *activityViewControntroller = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
-                                           if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                                           if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
                                                activityViewControntroller.popoverPresentationController.sourceView = self.view;
                                                activityViewControntroller.popoverPresentationController.sourceRect = CGRectMake(self.view.bounds.size.width/2, self.view.bounds.size.height/4, 0, 0);
                                            }

@@ -26,6 +26,10 @@ static JBUManager *sharedInstance = nil;
 - (instancetype)init {
     self = [super init];
     if (self) {
+        // Observe day change notification
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkUpdate) name:NSCalendarDayChangedNotification object:nil];
+
+        // Run CPDistributedMessagingCenter
         CPDistributedMessagingCenter *messagingCenter = [CPDistributedMessagingCenter centerNamed:@"jp.soh.jailbreakupdatechecker.center"];
         [messagingCenter runServerOnCurrentThread];
 
@@ -127,13 +131,13 @@ static JBUManager *sharedInstance = nil;
                 NSLog(@"Jailbreak is the latest version.");
 
                 // If the update was made by the JailbreakUpdateChecker, display an alert.
-                //NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                //if ([defaults objectForKey:@"isInUpdateSessionByJBU"]) {
-                NSLog(@"Show an alert to ask download IPA file");
-                NSNotification *notification = [NSNotification notificationWithName:@"JBUShowIPAAlertNotification" object:self userInfo:jsonResponse];
-                [[NSNotificationCenter defaultCenter] postNotification:notification];
-                //[defaults removeObjectForKey:@"isInUpdateSessionByJBU"];
-                //}
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                if ([defaults objectForKey:@"isInUpdateSessionByJBU"]) {
+                    NSLog(@"Show an alert to ask download IPA file");
+                    NSNotification *notification = [NSNotification notificationWithName:@"JBUShowIPAAlertNotification" object:self userInfo:jsonResponse];
+                    [[NSNotificationCenter defaultCenter] postNotification:notification];
+                    [defaults removeObjectForKey:@"isInUpdateSessionByJBU"];
+                }
             }
         } else {
             NSLog(@"err = %@", err);
