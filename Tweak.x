@@ -12,16 +12,6 @@
 -(void)showUpdateAlertForJailbreak: (NSNotification *)notification;
 @end
 
-// static size_t (*orig_fwrite)(const void *__restrict, size_t, size_t, FILE *__restrict);
-// size_t new_fwrite(const void *__restrict ptr, size_t size, size_t nitems, FILE *__restrict stream) {
-//     char *str = (char *)ptr;
-//     __block NSString *s = [NSString stringWithCString:str encoding:NSUTF8StringEncoding];
-
-//     // [[logInWindowManager share] addPrintWithMessage:s needReturn:false];
-//     NSLog(@"fwrite - %@", s);
-//     return orig_fwrite(ptr, size, nitems, stream);
-// }
-
 %group Sub
 %hookf(size_t, fwrite, const void *__restrict ptr, size_t size, size_t nitems, FILE *__restrict stream) {
     // Hooking fwrite just to get output is a bad way obviously.
@@ -34,7 +24,6 @@
     [messagingCenter sendMessageName:@"message" userInfo:messageDict];
     NSLog(@"JailbreakUpdateChecker - send message - %@", messageDict);
 
-    // NSLog(@"text = %@", [JBUManager sharedInstance].commandVC.outputView.text);
     return %orig;
 }
 %end
@@ -45,7 +34,9 @@
     %orig;
 
     NSLog(@"viewDidLoad");
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showUpdateAlertForJailbreak:) name:@"JailbreakUpdateNotification" object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showUpdateAlertForJailbreak:) name:@"JBUShowUpdateAlertNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showUpdateAlertForJailbreak:) name:@"JBUShowIPAAlertNotification" object:nil];
 
     [NSTimer scheduledTimerWithTimeInterval:60*60*24 repeats:YES block:^(NSTimer *timer) {
         [[JBUManager sharedInstance] checkUpdate];
@@ -61,20 +52,68 @@
         NSLog(@"Show Alert");
 
         NSString *jbInfo = [notification userInfo][@"name"];
-        NSString *message = [[NSString alloc] initWithFormat:@"%@ is available. Do you wish to update now?", jbInfo];
+        NSString *message;
+
+        BOOL isUpdateNotification = [notification.name isEqualToString:@"JBUShowUpdateAlertNotification"];
+
+        void (^alertActionHandler)(UIAlertAction *action);
+
+        if (isUpdateNotification) {
+            // Update Notification
+            message = [[NSString alloc] initWithFormat:@"%@ is available. Do you wish to update now?", jbInfo];
+            alertActionHandler = ^(UIAlertAction *action) {
+                NSLog(@"Run update");
+                [JBUManager sharedInstance].commandVC = [[JBUCommandOutputViewController alloc] init];
+                [JBUManager sharedInstance].commandVC.modalPresentationStyle = UIModalPresentationFullScreen;
+                [self presentViewController:[JBUManager sharedInstance].commandVC animated:YES completion:^() {
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                    [defaults setBool:YES forKey:@"isInUpdateSessionByJBU"];
+                    pid_t pid;
+                    posix_spawn(&pid, "/usr/local/bin/runjbupdate", NULL, NULL, NULL, NULL);
+                }];
+            };
+        } else {
+            // IPA Notificaiton
+            message = [[NSString alloc] initWithFormat:@"Successfully update to %@! Do you wish to download IPA file?\n\nChanges\n%@", jbInfo, [notification userInfo][@"description"]];
+            alertActionHandler = ^(UIAlertAction *action) {
+                NSURLSession *session = [NSURLSession sharedSession];
+                NSURL *url = [NSURL URLWithString:[notification userInfo][@"ipaURL"]];
+                NSString *originalFileName = [url lastPathComponent];
+                [[session downloadTaskWithURL:url completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
+                    NSLog(@"Successfully downloaded the ipa file / location = %@", location);
+
+                    NSURL *tmpFolderPath = [NSURL fileURLWithPath:NSTemporaryDirectory()];
+                    NSURL *newFilePath = [tmpFolderPath URLByAppendingPathComponent:originalFileName];
+                    if ([newFilePath checkResourceIsReachableAndReturnError:nil]) {
+                        // Remove the old file
+                        [[NSFileManager defaultManager] removeItemAtURL:newFilePath error:nil];
+                    }
+
+                    NSError *err;
+                    [[NSFileManager defaultManager] moveItemAtURL:location toURL:newFilePath error:&err];
+                    NSLog(@"original path = %@ / moved to %@", location, newFilePath);
+                    if (!err) {
+                        // Show sharesheet
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                                           NSArray *activityItems = @[newFilePath];
+                                           UIActivityViewController *activityViewControntroller = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
+                                           if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+                                               activityViewControntroller.popoverPresentationController.sourceView = self.view;
+                                               activityViewControntroller.popoverPresentationController.sourceRect = CGRectMake(self.view.bounds.size.width/2, self.view.bounds.size.height/4, 0, 0);
+                                           }
+                                           [self presentViewController:activityViewControntroller animated:YES completion:nil];
+                                       });
+                    } else {
+                        NSLog(@"error - %@", error);
+                    }
+                }] resume];
+            };
+        }
 
         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Jailbreak Update" message:message preferredStyle:UIAlertControllerStyleAlert];
-        UIAlertAction *updateAction = [UIAlertAction actionWithTitle:@"Update"
+        UIAlertAction *updateAction = [UIAlertAction actionWithTitle:isUpdateNotification ? @"Update" : @"Download"
                                                                style:UIAlertActionStyleDestructive
-                                                             handler:^(UIAlertAction *action) {
-                                                                 NSLog(@"Run update");
-                                                                 [JBUManager sharedInstance].commandVC = [[JBUCommandOutputViewController alloc] init];
-                                                                 [JBUManager sharedInstance].commandVC.modalPresentationStyle = UIModalPresentationFullScreen;
-                                                                 [self presentViewController:[JBUManager sharedInstance].commandVC animated:YES completion:^() {
-                                                                     pid_t pid;
-                                                                     posix_spawn(&pid, "/usr/local/bin/runupdatejb", NULL, NULL, NULL, NULL);
-                                                                 }];
-                                                             }];
+                                                             handler:alertActionHandler];
 
         UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel"
                                                                style:UIAlertActionStyleCancel

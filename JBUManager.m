@@ -73,7 +73,7 @@ static JBUManager *sharedInstance = nil;
 - (NSMutableDictionary *)getFileHashDict {
     NSMutableDictionary *hashDict = [NSMutableDictionary dictionary];
 
-    NSArray *jbFiles = @[@"/taurine/amfidebilitatee", @"/taurine/jailbreakd", @"/taurine/pspawn_payload.dylib", @"/usr/lib/pspawn_payload-stg2.dylib"];
+    NSArray *jbFiles = @[@"/taurine/amfidebilitate", @"/taurine/jailbreakd", @"/taurine/pspawn_payload.dylib", @"/usr/lib/pspawn_payload-stg2.dylib"];
     [jbFiles enumerateObjectsUsingBlock:^(NSString *filePath, NSUInteger idx, BOOL *stop) {
         NSURL *fileURL = [NSURL fileURLWithPath:filePath];
         NSString *sha256hash = [self sha256HashWithFilePath:fileURL];
@@ -114,21 +114,32 @@ static JBUManager *sharedInstance = nil;
     if (data.length != 0) {
         NSError *err;
         NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:data options:0 error:&err];
-        if (jsonResponse) {
+        if (!err) {
             NSLog(@"jsonResponse: %@", jsonResponse);
             if (![jsonResponse[@"sha256"] isEqualToDictionary:self.hashDict]) {
                 NSLog(@"Need to show an alert");
                 NSLog(@"res: %@", jsonResponse[@"sha256"]);
                 NSLog(@"hash: %@", self.hashDict);
 
-                NSNotification *notification = [NSNotification notificationWithName:@"JailbreakUpdateNotification" object:self userInfo:jsonResponse];
+                NSNotification *notification = [NSNotification notificationWithName:@"JBUShowUpdateAlertNotification" object:self userInfo:jsonResponse];
                 [[NSNotificationCenter defaultCenter] postNotification:notification];
             } else {
                 NSLog(@"Jailbreak is the latest version.");
+
+                // If the update was made by the JailbreakUpdateChecker, display an alert.
+                //NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                //if ([defaults objectForKey:@"isInUpdateSessionByJBU"]) {
+                NSLog(@"Show an alert to ask download IPA file");
+                NSNotification *notification = [NSNotification notificationWithName:@"JBUShowIPAAlertNotification" object:self userInfo:jsonResponse];
+                [[NSNotificationCenter defaultCenter] postNotification:notification];
+                //[defaults removeObjectForKey:@"isInUpdateSessionByJBU"];
+                //}
             }
+        } else {
+            NSLog(@"err = %@", err);
         }
     } else {
-        NSLog(@"file size is zero");
+        NSLog(@"ERROR: file size is zero");
     }
 }
 
