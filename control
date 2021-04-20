@@ -1,6 +1,6 @@
 Package: jp.soh.jailbreakupdatechecker
 Name: JailbreakUpdateChecker
-Version: 0.0.1
+Version: 0.0.2
 Architecture: iphoneos-arm
 Description: Check for jailbreak updates
 Maintainer: Soh Satoh

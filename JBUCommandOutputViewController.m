@@ -15,14 +15,6 @@
     visualEffectView.frame = self.view.bounds;
     [self.view addSubview:visualEffectView];
 
-    // UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height / 6)];
-    // titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:[UIFont labelFontSize]];
-    // titleLabel.textColor = [UIColor labelColor];
-    // titleLabel.textAlignment = NSTextAlignmentCenter;
-    // titleLabel.center = CGPointMake(self.view.frame.size.width / 2, self.view.frame.size.height / 2);
-    // titleLabel.text = @"Updating...";
-    // [self.view addSubview:titleLabel];
-
     UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 10, self.view.frame.size.width, self.view.frame.size.height / 6)];
     titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:[UIFont labelFontSize] * 1.5];
     titleLabel.textColor = [UIColor labelColor];
