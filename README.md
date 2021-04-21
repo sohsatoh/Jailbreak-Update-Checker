@@ -21,3 +21,5 @@ Just build using Theos
 ## License
 
 CC BY-NC-ND 4.0
+
+(I will generally allow other developers to improve this, but I'm using this license setting in case other pirate repositories make harmful copies.)
